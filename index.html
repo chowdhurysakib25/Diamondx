@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diamond Collector</title>
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #4a90e2, #9013fe);
+      --secondary-gradient: linear-gradient(135deg, #50e3c2, #b8e986);
+      --bg-color: #121212;
+      --card-bg: #1f1f1f;
+      --text-color: #ffffff;
+      --accent-color: #4a90e2;
+      --border-radius: 12px;
+      --transition-speed: 0.3s;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg-color); color:var(--text-color); display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+    header { width:100%; padding:1rem; background:var(--primary-gradient); text-align:center; font-size:1.75rem; font-weight:bold; border-bottom-left-radius:var(--border-radius); border-bottom-right-radius:var(--border-radius); box-shadow:0 4px 12px rgba(0,0,0,0.5); }
+    #container { width:100%; max-width:480px; margin:1rem; background:var(--card-bg); border-radius:var(--border-radius); padding:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.4); }
+    button { display:inline-block; width:calc(50% - 1rem); margin:0.5rem; padding:0.75rem 0; font-size:1rem; font-weight:600; text-transform:uppercase; color:var(--text-color); background:var(--secondary-gradient); border:none; border-radius:var(--border-radius); cursor:pointer; transition:background var(--transition-speed),transform var(--transition-speed); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
+    button:disabled { background:#333; cursor:not-allowed; opacity:0.6; }
+    button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.6); }
+    input { width:100%; padding:0.6rem; margin:0.5rem 0; border:none; border-radius:var(--border-radius); background:#2a2a2a; color:var(--text-color); font-size:1rem; }
+    iframe { width:100%; height:150px; border:none; border-radius:var(--border-radius); background:#000; }
+    .hidden { display:none; }
+    a { color:var(--accent-color); text-decoration:none; font-weight:500; }
+    a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <header>Diamond Collector</header>
+  <div id="container">
+    <div id="home">
+      <button id="startBtn">Start Auto Clicker</button>
+      <button id="stopBtn" disabled>Stop</button>
+      <p style="margin-top:1rem;">Coins: <span id="coinCount">0.00</span></p>
+    </div><div id="ads" class="hidden">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+    <iframe src="https://notoriouscolumnistdead.com/mhy5w65426?key=dae01f29fa4407184ca396d3925d6c1c"></iframe>
+    <iframe src="https://notoriouscolumnistdead.com/mhy5w65426?key=dae01f29fa4407184ca396d3925d6c1c"></iframe>
+    <iframe src="https://notoriouscolumnistdead.com/mhy5w65426?key=dae01f29fa4407184ca396d3925d6c1c"></iframe>
+    <iframe src="https://notoriouscolumnistdead.com/mhy5w65426?key=dae01f29fa4407184ca396d3925d6c1c"></iframe>
+  </div>
+</div>
+
+<div id="withdraw" style="margin-top:1rem;">
+  <h3>Withdraw Diamonds</h3>
+  <input type="text" id="userName" placeholder="Your Name" />
+  <input type="text" id="userCode" placeholder="8-10 Digit Code" maxlength="10" />
+  <button id="withdraw25" disabled>25 Diamonds (1 coins)</button>
+  <button id="withdraw50" disabled>50 Diamonds (200 coins)</button>
+</div>
+
+<p style="text-align:center; margin-top:1rem;"><a href="history.html">View Withdrawal History</a></p>
+
+  </div>  <script>
+    let coins = parseFloat(localStorage.getItem('coins')||'0'), running=false;
+    let adTimeout=null, breakTimeout=null;
+    const $ = s => document.querySelector(s);
+    const coinDisplay = $('#coinCount'), startBtn = $('#startBtn'), stopBtn = $('#stopBtn');
+    const home = $('#home'), ads = $('#ads');
+    const w25 = $('#withdraw25'), w50 = $('#withdraw50');
+    const nameInput = $('#userName'), codeInput = $('#userCode');
+
+    function updateUI(){
+      coinDisplay.textContent = coins.toFixed(2);
+      localStorage.setItem('coins', coins);
+      w25.disabled = coins < 1;
+      w50.disabled = coins < 200;
+    }
+
+    function showAds(){
+      if(!running) return;
+      home.classList.add('hidden');
+      ads.classList.remove('hidden');
+      adTimeout = setTimeout(() => {
+        coins += 0.20;
+        updateUI();
+        hideAds();
+      }, 10000);
+    }
+
+    function hideAds(){
+      clearTimeout(adTimeout);
+      ads.classList.add('hidden');
+      home.classList.remove('hidden');
+      if (running) {
+        breakTimeout = setTimeout(showAds, 2000);
+      }
+    }
+
+    startBtn.onclick = () => {
+      running = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      showAds();
+    };
+
+    stopBtn.onclick = () => {
+      running = false;
+      clearTimeout(adTimeout);
+      clearTimeout(breakTimeout);
+      ads.classList.add('hidden');
+      home.classList.remove('hidden');
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+
+    function recordWithdraw(cost, diamonds){
+      const name = nameInput.value.trim();
+      const code = codeInput.value.trim();
+      if (!name) { alert('Enter your name'); return; }
+      if (!/^[0-9]{8,10}$/.test(code)) { alert('Code 8-10 digits'); return; }
+      if (coins < cost) { alert('Not enough coins'); return; }
+      coins -= cost;
+      updateUI();
+      const now = new Date().toISOString();
+      const history = JSON.parse(localStorage.getItem('withdrawHistory') || '[]');
+      history.push({ name, code, diamonds, time: now });
+      localStorage.setItem('withdrawHistory', JSON.stringify(history));
+      alert(`Withdrawn ${diamonds} diamonds on ${new Date(now).toLocaleString()}. Please screenshot.`);
+    }
+
+    w25.onclick = () => recordWithdraw(1, 25);
+    w50.onclick = () => recordWithdraw(200, 50);
+
+    updateUI();
+  </script></body>
+</html>
